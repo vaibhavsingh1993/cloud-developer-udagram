@@ -36,6 +36,15 @@ import { filterImageFromURL, deleteLocalFiles } from './util/util';
 				message: 'The image url not provided'
 			});
 		}
+
+		try {
+			// check if image exists,and if yes, fetch the image
+			const filteredURL = await filterImageFromURL(url);
+			res.sendFile(filteredURL, () => deleteLocalFiles([ filteredURL ]));
+		} catch (error) {
+			res.sendStatus(422).send('Image specified by the URL does not exist or is malformed');
+			console.error(error);
+		}
 	});
 	//! END @TODO1
 
