@@ -29,6 +29,8 @@ import { filterImageFromURL, deleteLocalFiles } from './util/util';
 	/**************************************************************************** */
 	app.get('/filteredimage', async (req, res) => {
 		const url = req.query.image_url;
+		// Tested for url
+		// http://localhost:8082/filteredimage?image_url=https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg
 
 		// Check if url is provided
 		if (!url) {
@@ -42,6 +44,7 @@ import { filterImageFromURL, deleteLocalFiles } from './util/util';
 			const filteredURL = await filterImageFromURL(url);
 			res.sendFile(filteredURL, () => deleteLocalFiles([ filteredURL ]));
 		} catch (error) {
+      // Send error code 422 according to rubric.
 			res.sendStatus(422).send('Image specified by the URL does not exist or is malformed');
 			console.error(error);
 		}
