@@ -1,6 +1,6 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
-import { filterImageFromURL, deleteLocalFiles } from './util/util';
+import { filterImageFromURL, deleteLocalFiles, errorMessage } from './util/util';
 
 (async () => {
 	// Init the Express application
@@ -27,25 +27,26 @@ import { filterImageFromURL, deleteLocalFiles } from './util/util';
 	//   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
 
 	/**************************************************************************** */
-	app.get('/filteredimage', async (req, res) => {
-		const url = req.query.image_url;
+	app.get('/filteredimage', async (req : Request, res : Response) => {
+		let error = new errorMessage();
+		const url: string = req.query.image_url;
 		// Tested for url
 		// http://localhost:8082/filteredimage?image_url=https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg
 
 		// Check if url is provided
 		if (!url) {
 			return res.status(400).send({
-				message: 'The image url not provided'
+				message: error.error_400
 			});
 		}
 
 		try {
 			// check if image exists,and if yes, fetch the image
 			const filteredURL = await filterImageFromURL(url);
-			res.sendFile(filteredURL, () => deleteLocalFiles([ filteredURL ]));
+			res.sendFile(filteredURL, {}, () => deleteLocalFiles([ filteredURL ]));
 		} catch (error) {
-      // Send error code 422 according to rubric.
-			res.sendStatus(422).send('Image specified by the URL does not exist or is malformed');
+			// Send error code 422 according to rubric.
+			res.sendStatus(422).send(error.error_422);
 			console.error(error);
 		}
 	});
@@ -54,7 +55,7 @@ import { filterImageFromURL, deleteLocalFiles } from './util/util';
 	// Root Endpoint
 	// Displays a simple message to the user
 	app.get('/', async (req, res) => {
-		res.send('try GET /filteredimage?image_url={{}}');
+		res.sendStatus(200).send('try GET /filteredimage?image_url={{}}');
 	});
 
 	// Start the Server
